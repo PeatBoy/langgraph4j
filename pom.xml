@@ -49,6 +49,8 @@
     <langchain4j.beta>1.7.1-beta14</langchain4j.beta>
     <spring-ai.version>1.0.3</spring-ai.version>
     <flatten-maven-plugin.version>1.5.0</flatten-maven-plugin.version>
+    <otel.version>1.55.0</otel.version>
+
   </properties>
 
 
