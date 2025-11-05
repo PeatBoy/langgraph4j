@@ -1,5 +1,6 @@
 package org.bsc.langgraph4j;
 
+import io.opentelemetry.api.metrics.LongCounter;
 import org.bsc.async.AsyncGenerator;
 import org.bsc.langgraph4j.action.*;
 import org.bsc.langgraph4j.checkpoint.BaseCheckpointSaver;
@@ -8,12 +9,12 @@ import org.bsc.langgraph4j.internal.edge.Edge;
 import org.bsc.langgraph4j.internal.edge.EdgeValue;
 import org.bsc.langgraph4j.internal.node.ParallelNode;
 import org.bsc.langgraph4j.internal.node.SubCompiledGraphNodeAction;
+import org.bsc.langgraph4j.otel.Instrumentable;
 import org.bsc.langgraph4j.state.AgentState;
 import org.bsc.langgraph4j.state.StateSnapshot;
 import org.bsc.langgraph4j.utils.TryFunction;
 import org.bsc.langgraph4j.utils.TypeRef;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -36,7 +37,7 @@ import static org.bsc.langgraph4j.StateGraph.START;
  *
  * @param <State> the type of the state associated with the graph
  */
-public class CompiledGraph<State extends AgentState> {
+public class CompiledGraph<State extends AgentState> implements Instrumentable {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(CompiledGraph.class);
 
     private static final String INTERRUPT_AFTER = "__INTERRUPTED__";
@@ -84,12 +85,26 @@ public class CompiledGraph<State extends AgentState> {
 
     public final CompileConfig compileConfig;
 
+    private final LongCounter cloneStateCounter;
+
+    private final TracerHolder TRACER;
+
     /**
      * Constructs a CompiledGraph with the given StateGraph.
      *
      * @param stateGraph the StateGraph to be used in this CompiledGraph
      */
     protected CompiledGraph(StateGraph<State> stateGraph, CompileConfig compileConfig ) throws GraphStateException {
+
+        var METER = meter( getClass().getName() );
+
+        cloneStateCounter = METER.countBuilder( "cloneState")
+                .setDescription( "cloneState() invocation")
+                .setUnit("Unit")
+                .build()
+                ;
+
+        TRACER = tracer( getClass().getName() );
 
         maxIterations = compileConfig.recursionLimit();
 
@@ -379,8 +394,15 @@ public class CompiledGraph<State extends AgentState> {
                 .orElseGet( () -> AgentState.updateState( getInitialStateFromSchema(), inputs, stateGraph.getChannels() ));
     }
 
-    State cloneState( Map<String,Object> data ) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        return stateGraph.getStateSerializer().cloneObject(data);
+    State cloneState(Map<String,Object> data ) throws Exception {
+
+        return TRACER.spanBuilder( "cloneState")
+                        .startSpan( span -> {
+                            var result = stateGraph.getStateSerializer().cloneObject(data);;
+                            cloneStateCounter.add(1L);
+                            return result;
+
+                        });
     }
 
     /**
