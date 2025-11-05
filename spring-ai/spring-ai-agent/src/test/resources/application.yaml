@@ -1,8 +1,8 @@
 spring:
   profiles:
-    active: github-models
+#    active: github-models
 #    active: gemini
-#    active: ollama
+    active: ollama
   application:
     name: springai-agentexecutor
   main:
@@ -10,21 +10,3 @@ spring:
     web-application-type: none
 # studio
 #     web-application-type: servlet
-
-  ai:
-#    openai:
-#      api-key: ${OPENAI_API_KEY}
-#      chat:
-#        options:
-#          model: gpt-4o-mini
-    ollama:
-      base-url: http://localhost:11434
-      chat:
-        options:
-          model: qwen2.5:7b
-          #model: llama3.1:latest
-          temperature: 0.0
-weather:
-  api-key: ${WEATHER_API_KEY}
-  api-url: https://api.weatherapi.com/v1
-

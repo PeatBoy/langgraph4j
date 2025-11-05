@@ -22,10 +22,12 @@ public class ChatModelConfiguration {
     @Profile("ollama")
     public ChatModel ollamaModel() {
         return OllamaChatModel.builder()
-                .ollamaApi(OllamaApi.builder().baseUrl("http://localhost:11434").build())
+                .ollamaApi(OllamaApi.builder()
+                        //.baseUrl("http://localhost:11434")
+                        .build())
                 .defaultOptions(OllamaOptions.builder()
-                        //.model("qwen2.5:7b")
-                        .model("gpt-oss:20b")
+                        .model("qwen2.5:7b")
+                        //.model("gpt-oss:20b")
                         .temperature(0.1)
                         .build())
                 .build();

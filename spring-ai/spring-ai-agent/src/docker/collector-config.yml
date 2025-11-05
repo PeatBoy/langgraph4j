@@ -1,0 +1,22 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+exporters:
+  otlphttp/zipkin:
+    # zipkin's native OTLP/HTTP endpoint (since Loki 2.9+)
+    endpoint: http://zipkin:9411/otlp
+
+processors:
+  batch: {}
+
+service:
+  pipelines:
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/zipkin]

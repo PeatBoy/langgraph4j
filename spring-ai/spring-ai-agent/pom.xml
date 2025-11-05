@@ -2,48 +2,53 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.bsc.langgraph4j</groupId>
-		<artifactId>langgraph4j-parent</artifactId>
-		<version>1.8-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
-	</parent>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.7</version>
+    </parent>
 
+    <groupId>org.bsc.langgraph4j</groupId>
 	<artifactId>langgraph4j-springai-agentexecutor</artifactId>
-	<version>1.8-SNAPSHOT</version>
+    <version>1.8-SNAPSHOT</version>
 	<packaging>jar</packaging>
-    <url>https://github.com/langgraph4j/langgraph4j</url>
 
 	<name>langgraph4j::springai::agentexecutor</name>
 	<description>Sample using Langgraph4j with SpringAI</description>
+    <properties>
+        <spring-ai.version>1.0.3</spring-ai.version>
+    </properties>
 
-	
-	<licenses>
-		<license/>
-	</licenses>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.bsc.langgraph4j</groupId>
+                <artifactId>langgraph4j-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
 
-	<developers>
-		<developer>
-			<name>Bartolomeo Sorrentino</name>
-			<email>bartolomeo.sorrentino@gmail.com</email>
-			<url>https://bsorrentino.github.io/bsorrentino/</url>
-		</developer>
-	</developers>
-
-	<properties>
-	</properties>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 	<dependencies>
 
 		<dependency>
 			<groupId>org.bsc.langgraph4j</groupId>
 			<artifactId>langgraph4j-core</artifactId>
-			<version>${project.version}</version>
 		</dependency>
-		<dependency>
+
+        <dependency>
 			<groupId>org.bsc.langgraph4j</groupId>
 			<artifactId>langgraph4j-spring-ai</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
@@ -77,47 +82,63 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
+
+        <dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-			<scope>test</scope>
+            <scope>test</scope>
 		</dependency>
 
+        <dependency>
+            <groupId>org.bsc.langgraph4j</groupId>
+            <artifactId>langgraph4j-studio-springboot</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
+        <!-- OpenTelemetry SDK -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk</artifactId>
+        </dependency>
+
+        <!-- OpenTelemetry SDK Extension Autoconfigure -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
+            <version>1.55.0</version>
+        </dependency>
+
+        <!-- OpenTelemetry Exporter (e.g., OTLP) -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp</artifactId>
+        </dependency>
+
+        <!-- OpenTelemetry Logback Appender -->
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-logback-appender-1.0</artifactId>
+            <version>2.21.0-alpha</version>
+        </dependency>
+
+        <!-- Logback (SLF4j implementation) -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.5.20</version>
+        </dependency>
+
+
+        <!--
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+        -->
 
-		<dependency>
-			<groupId>org.bsc.langgraph4j</groupId>
-			<artifactId>langgraph4j-studio-springboot</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-	</dependencies>
-
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-starter-parent</artifactId>
-				<version>3.3.4</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.springframework.ai</groupId>
-				<artifactId>spring-ai-bom</artifactId>
-				<version>${spring-ai.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+    </dependencies>
 
 	<build>
 		<pluginManagement>
