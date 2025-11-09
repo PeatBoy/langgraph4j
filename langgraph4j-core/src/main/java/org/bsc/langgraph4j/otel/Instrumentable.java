@@ -19,12 +19,13 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
 public interface Instrumentable {
 
-    org.slf4j.Logger otelLog = org.slf4j.LoggerFactory.getLogger("langgraph4j-otel");
+    org.slf4j.Logger otelLog = org.slf4j.LoggerFactory.getLogger("LG4J-OTEL");
 
     default OpenTelemetry otel() {
         return Optional.ofNullable( io.opentelemetry.api.GlobalOpenTelemetry.get() )
@@ -43,7 +44,7 @@ public interface Instrumentable {
 
     }
 
-    final class TracerHolder {
+    class TracerHolder {
         @FunctionalInterface
         public interface TryFunction<R> {
             R apply( Span span ) throws Exception;
@@ -223,15 +224,18 @@ public interface Instrumentable {
         }
 
         final String scope;
-        private final Instrumentable owner;
+        final OpenTelemetry otel;
 
-        public TracerHolder( Instrumentable owner, String scope ) {
+        public TracerHolder( OpenTelemetry otel, String scope ) {
             this.scope = requireNonNull( scope, "scope cannot be null");
-            this.owner = requireNonNull(owner, "owner cannot be null");
+            this.otel = requireNonNull(otel, "otel cannot be null");
+        }
+        public TracerHolder( Instrumentable owner ) {
+            this( requireNonNull(owner, "owner cannot be null").otel(), owner.getClass().getName() );
         }
 
         public Tracer object() {
-            return owner.otel().getTracer(scope);
+            return otel.getTracer(scope);
         }
 
         public SB spanBuilder( String spanName ) {
@@ -240,17 +244,28 @@ public interface Instrumentable {
 
     }
 
-    final class MeterHolder {
-        final String scope;
-        private final Instrumentable owner;
+    default <T extends TracerHolder> T tracer( Supplier<T> tracerHolderFactory ) {
+        return requireNonNull(tracerHolderFactory, "tracerHolderFactory cannot be null").get();
+    }
 
-        public MeterHolder(Instrumentable owner, String scope ) {
+    default TracerHolder tracer() {
+        return tracer( () -> new TracerHolder( this ) );
+    }
+
+    class MeterHolder {
+        final String scope;
+        final OpenTelemetry otel;
+
+        public MeterHolder( OpenTelemetry otel, String scope ) {
             this.scope = requireNonNull( scope, "scope cannot be null");
-            this.owner = requireNonNull(owner, "owner cannot be null");
+            this.otel = requireNonNull(otel, "otel cannot be null");
+        }
+        public MeterHolder( Instrumentable owner ) {
+            this( requireNonNull(owner, "owner cannot be null").otel(), owner.getClass().getName() );
         }
 
         public Meter object() {
-            return owner.otel().getMeter(scope);
+            return otel.getMeter(scope);
         }
 
         public LongCounterBuilder countBuilder(String counterName ) {
@@ -271,12 +286,12 @@ public interface Instrumentable {
 
     }
 
-    default TracerHolder tracer(String scope ) {
-        return new TracerHolder( this, scope );
+    default <T extends MeterHolder> T meter( Supplier<T> meterHolderFactory ) {
+        return requireNonNull(meterHolderFactory, "meterHolderFactory cannot be null").get();
     }
 
-    default MeterHolder meter( String scope ) {
-        return new MeterHolder( this, scope );
+    default MeterHolder meter() {
+        return meter( () -> new MeterHolder( this ) );
     }
 
 }
