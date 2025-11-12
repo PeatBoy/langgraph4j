@@ -2,6 +2,7 @@ package org.bsc.langgraph4j.spring.ai.agentexecutor;
 
 import com.google.cloud.vertexai.Transport;
 import com.google.cloud.vertexai.VertexAI;
+import io.micrometer.observation.ObservationRegistry;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaApi;
@@ -18,10 +19,12 @@ import org.springframework.context.annotation.Profile;
 @Configuration
 public class ChatModelConfiguration {
 
+
     @Bean
     @Profile("ollama")
-    public ChatModel ollamaModel() {
+    public ChatModel ollamaModel( ObservationRegistry observationRegistry ) {
         return OllamaChatModel.builder()
+                .observationRegistry(observationRegistry)
                 .ollamaApi(OllamaApi.builder()
                         //.baseUrl("http://localhost:11434")
                         .build())

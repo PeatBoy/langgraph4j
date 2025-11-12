@@ -10,11 +10,26 @@ spring:
 #    web-application-type: none
 # studio
     web-application-type: servlet
+  ai:
+    chat:
+      client:
+        observations:
+          log-prompt: true
+      observations:
+        log-completion: true
+        log-prompt: true
+    tools:
+      observations:
+        include-content: true
 
 management:
   tracing:
     sampling:
       probability: 1.0 # Sample all traces for dev/testing (0.1 for production)
+  endpoints:
+    web:
+      exposure:
+        include: "*"
 
 otel:
   sdk:
