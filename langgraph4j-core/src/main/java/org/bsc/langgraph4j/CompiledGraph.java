@@ -2,9 +2,11 @@ package org.bsc.langgraph4j;
 
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ImplicitContextKeyed;
+import io.opentelemetry.context.Scope;
 import org.bsc.async.AsyncGenerator;
 import org.bsc.langgraph4j.action.*;
 import org.bsc.langgraph4j.checkpoint.BaseCheckpointSaver;
@@ -94,10 +96,16 @@ public class CompiledGraph<State extends AgentState> implements Instrumentable {
             super(owner);
         }
 
-        public void startStreamSpan( UnaryOperator<SB> builder ) {
+        public Span startStreamSpan(String name, UnaryOperator<SB> builder ) {
+            if( streamSpan != null ) {
+                throw new IllegalStateException("Stream span already started!");
+            }
+
             streamSpan = requireNonNull(builder, "builder cannot be null")
-                        .apply( spanBuilder( "stream" ))
+                        .apply( spanBuilder( name ) )
                         .startSpan();
+            return streamSpan;
+
         };
 
     }
@@ -449,14 +457,16 @@ public class CompiledGraph<State extends AgentState> implements Instrumentable {
         requireNonNull(config, "config cannot be null");
         requireNonNull( input, "input cannot be null" );
 
-        TRACER.startStreamSpan( b -> b
+        final var scope = Span.current().makeCurrent();
+        final var streamSpan = TRACER.startStreamSpan( "stream", b -> b
                 .setAttribute( input )
                 .setAllAttributes( config ));
 
         final var generator = new AsyncNodeGenerator<>(input, config);
 
         return new AsyncGenerator.WithEmbed<>(generator, result  -> {
-                TRACER.streamSpan().ifPresent(Span::end);
+            streamSpan.end();
+            scope.close();
         });
 
     }
@@ -492,8 +502,16 @@ public class CompiledGraph<State extends AgentState> implements Instrumentable {
     public AsyncGenerator.Cancellable<NodeOutput<State>> streamSnapshots( GraphInput input, RunnableConfig config )  {
         requireNonNull(config, "config cannot be null");
 
+        final var scope = Span.current().makeCurrent();
+        final var streamSpan = TRACER.startStreamSpan( "streamSnapshots", b -> b
+                .setAttribute( input )
+                .setAllAttributes( config ));
+
         final AsyncNodeGenerator<NodeOutput<State>> generator = new AsyncNodeGenerator<>( input, config.withStreamMode(StreamMode.SNAPSHOTS) );
-        return new AsyncGenerator.WithEmbed<>( generator );
+        return new AsyncGenerator.WithEmbed<>( generator, result  -> {
+            streamSpan.end();
+            scope.close();
+        } );
     }
 
     /**
