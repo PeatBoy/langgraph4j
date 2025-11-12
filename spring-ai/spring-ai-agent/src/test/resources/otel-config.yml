@@ -1,0 +1,96 @@
+otel:
+  ##########################
+  # General
+  ##########################
+  sdk:
+    disabled: false
+  attribute:
+    count:
+      limit: 128
+  propagators: tracecontext,baggage
+  
+  ##########################
+  # Resource
+  ##########################
+  service:
+    name: LG4J
+
+  ##########################
+  # Traces
+  ##########################
+  bsp:
+    schedule:
+      delay: 5000 # Interval in milliseconds between two consecutive span exports.
+    max:
+      queue:
+        size: 2048
+      export:
+        batch:
+          size: 512
+    export:
+      timeout: 30000
+  traces:
+    sampler: always_on
+    exporter: otlp
+  span:
+    attribute:
+      count:
+        limit: 128
+    event:
+      count:
+        limit: 128
+    link:
+      count:
+        limit: 128
+
+  ##########################
+  # Metrics
+  ##########################
+  metric:
+    export:
+      interval: 60000
+  metrics:
+    exemplar:
+      filter: TRACE_BASED
+    exporter: none
+  blrp:
+    schedule:
+      delay: 1000
+    max:
+      queue:
+        size: 2048
+      export:
+        batch:
+          size: 512
+    export:
+      timeout: 30000
+
+  ##########################
+  # logs
+  ##########################
+  logs:
+    exporter: none
+  java:
+    exporter:
+      memory_mode: reusable_data
+      otlp:
+        retry:
+          disabled: false
+    metrics:
+      cardinality:
+        limit: 2000
+
+  ##########################
+  # Exporters
+  ##########################
+  exporter:
+    otlp:
+      protocol: grpc
+      endpoint: http://localhost:4317
+      timeout: 10000
+      metrics:
+        temporality:
+          preference: CUMULATIVE
+        default:
+          histogram:
+            aggregation: EXPLICIT_BUCKET_HISTOGRAM

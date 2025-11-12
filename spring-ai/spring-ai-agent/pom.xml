@@ -111,32 +111,11 @@
             <scope>test</scope>
         </dependency>
 
-
-        <!-- OpenTelemetry SDK -->
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-sdk</artifactId>
-        </dependency>
-
-        <!-- OpenTelemetry SDK Extension Autoconfigure -->
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
-            <version>1.55.0</version>
-        </dependency>
-
-        <!-- OpenTelemetry Exporter (e.g., OTLP) -->
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-exporter-otlp</artifactId>
-        </dependency>
-
-        <!-- OpenTelemetry Logback Appender -->
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
-            <artifactId>opentelemetry-logback-appender-1.0</artifactId>
-            <version>2.21.0-alpha</version>
+            <artifactId>opentelemetry-spring-boot-starter</artifactId>
         </dependency>
+
 
         <!-- Logback (SLF4j implementation) -->
         <dependency>
@@ -144,7 +123,6 @@
             <artifactId>logback-classic</artifactId>
             <version>1.5.20</version>
         </dependency>
-
 
         <!--
 		<dependency>

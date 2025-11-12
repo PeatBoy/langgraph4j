@@ -10,3 +10,77 @@ spring:
     web-application-type: none
 # studio
 #     web-application-type: servlet
+
+otel:
+  sdk:
+    disabled: false
+  attribute:
+    count:
+      limit: 128
+  propagators: tracecontext,baggage
+  service:
+    name: Agent
+  bsp:
+    schedule:
+      delay: 5000 # Interval in milliseconds between two consecutive span exports.
+    max:
+      queue:
+        size: 2048 # Maximum queue size for spans to be exported.
+      export:
+        batch:
+          size: 512 # Maximum batch size for span exports.
+    export:
+      timeout: 30000 # Timeout in milliseconds for span exports.
+  traces:
+    sampler: always_on # Always sample all traces.
+    exporter: otlp # Use OTLP exporter for traces.
+  span:
+    attribute:
+      count:
+        limit: 128 # Maximum number of attributes per span.
+    event:
+      count:
+        limit: 128 # Maximum number of events per span.
+    link:
+      count:
+        limit: 128 # Maximum number of links per span.
+  metric:
+    export:
+      interval: 60000 # Interval in milliseconds for metric exports.
+  metrics:
+    exemplar:
+      filter: TRACE_BASED # Use trace-based filtering for exemplars.
+    exporter: none # Disable metric exporting.
+  blrp:
+    schedule:
+      delay: 1000 # Interval in milliseconds between two consecutive metric exports.
+    max:
+      queue:
+        size: 2048 # Maximum queue size for metrics to be exported.
+      export:
+        batch:
+          size: 512 # Maximum batch size for metric exports.
+    export:
+      timeout: 30000 # Timeout in milliseconds for metric exports.
+  logs:
+    exporter: none # Disable log exporting.
+  java:
+    exporter:
+      memory_mode: reusable_data # Use reusable data mode for memory exporter.
+      otlp:
+        retry:
+          disabled: false # Enable retries for OTLP exporter.
+    metrics:
+      cardinality:
+        limit: 2000 # Maximum cardinality for Java metrics.
+  exporter:
+    otlp:
+      protocol: http/protobuf # Use HTTP/protobuf protocol for OTLP exporter.
+      endpoint: http://localhost:4318 # OTLP endpoint.
+      timeout: 10000 # Timeout in milliseconds for OTLP exporter.
+      metrics:
+        temporality:
+          preference: CUMULATIVE # Prefer cumulative temporality for metrics.
+        default:
+          histogram:
+            aggregation: EXPLICIT_BUCKET_HISTOGRAM # Use explicit bucket histogram aggregation for histograms.
